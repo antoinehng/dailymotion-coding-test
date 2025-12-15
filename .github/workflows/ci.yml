@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  ENV: test
+
+jobs:
+  check:
+    name: Check code
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@main
+      - name: Setup CI
+        uses: ./.github/actions/ci-setup
+      - name: Lint check
+        run: make check lint
+      - name: Imports check
+        run: make check imports
+      - name: Type check
+        run: make check types
+      - name: Format check
+        run: make format
+
+  test:
+    name: Test
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@main
+      - name: Setup CI
+        uses: ./.github/actions/ci-setup
+      - name: Test suite
+        run: make test
+
+  audit:
+    name: Security Audit
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Setup CI
+        uses: ./.github/actions/ci-setup
+      - name: Install gitleaks (via action)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+      - name: Security check
+        run: make check-security

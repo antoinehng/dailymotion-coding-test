@@ -1,0 +1,29 @@
+name: Setup
+description: "Setup the environment for the project CI"
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Set up Python"
+      uses: actions/setup-python@main
+      with:
+        python-version-file: "pyproject.toml"
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@main
+      with:
+        enable-cache: true
+
+    - name: Caching dependencies
+      id: cache-dependencies
+      uses: actions/cache@main
+      with:
+        path: |
+          ~/.cache/uv
+          .venv
+        key: uv-lock-${{ hashFiles('**/uv.lock') }}
+
+    - name: Install the project
+      if: steps.cache-dependencies.outputs.cache-hit != 'true' # Only run if cache miss
+      shell: bash
+      run: uv sync --dev
