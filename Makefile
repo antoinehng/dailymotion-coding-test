@@ -1,12 +1,31 @@
+# Makefile for Development Tooling
+#
+# While Makefiles may not be the fanciest or most modern approach to defining dev tooling
+# commands, they provide exceptional reliability and universal compatibility. Make is a
+# standard tool available on virtually every Unix-like system, making it the most accessible
+# choice for development workflows.
+#
+# This approach ensures that any engineer, regardless of their preferred tooling or level
+# of familiarity with project-specific tools, can easily discover and execute essential
+# development tasks. By standardizing on Make, we guarantee that the basics are covered
+# for everyone - from CI/CD pipelines to new contributors setting up their environment.
+#
+# Key benefits:
+# - Universal availability (Linux, macOS, Docker containers)
+# - No additional dependencies or runtime requirements
+# - Self-documenting via `make help`
+# - Consistent behavior across different environments
+# - Works seamlessly with any language or toolchain
+
 .PHONY: help check check-lint format check-format check-imports check-types check-security check-all test install-dev imports lint types security all
 
 help: ## Show this help message
 	@echo "Available commands:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-install-dev: ## Install development dependencies
+install: #m# Install development dependencies
 	brew install uv gitleaks
-	uv sync --extra dev
+	uv sync --group dev
 
 format: ## Format code with ruff
 	uv run ruff check --select I,F --fix .
