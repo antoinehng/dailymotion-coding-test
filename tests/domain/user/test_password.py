@@ -2,7 +2,7 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from src.domain.user.password import Password
+from src.domain.user.value_objects.password import Password
 
 
 class TestPasswordMinLength:
@@ -153,7 +153,7 @@ class TestPasswordMultipleErrors:
             Password("weak")  # Too short, no uppercase, no digit, no special char
 
         # Should have multiple exceptions
-        assert len(exc_info.value.exceptions) >= 4 # noqa: PLR2004
+        assert len(exc_info.value.exceptions) >= 4  # noqa: PLR2004
         error_messages = [str(e) for e in exc_info.value.exceptions]
         assert any("at least 8 characters" in msg for msg in error_messages)
         assert any("uppercase letter" in msg for msg in error_messages)

@@ -1,7 +1,7 @@
 import pytest
 
-from src.domain.user.password import Password
-from src.domain.user.password_hash import PasswordHash
+from src.domain.user.value_objects.password import Password
+from src.domain.user.value_objects.password_hash import PasswordHash
 from src.infrastructure.security.password_hasher import BcryptPasswordHasher
 
 

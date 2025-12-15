@@ -6,7 +6,7 @@ from uuid import uuid7
 import pytest
 
 from src.domain.common.public_id import PublicId
-from src.domain.user.public_id import UserPublicId
+from src.domain.user.entities.user import UserPublicId
 
 
 class TestPublicIdInitialization:
