@@ -1,4 +1,5 @@
 import logging
+import os
 from collections.abc import MutableMapping
 from contextvars import ContextVar
 from typing import Any
@@ -43,11 +44,19 @@ def getLogger(name: str | None = None, prefix: str | None = None) -> PrefixAdapt
     logger = logging.getLogger(name)
     logger.propagate = False
 
+    # Set logger level from environment variable or default to INFO
+    log_level = os.getenv("LOG_LEVEL", "INFO").upper()
+    logger.setLevel(getattr(logging, log_level, logging.INFO))
+
     if not logger.hasHandlers():
         # Currently using RichHandler for local and coding test.
         # Either add DatadogHandler or GCP CloudLoggingHandler for remote deployment.
         # Maybe even use a company logging package for consitency across projects.
-        logger.addHandler(RichHandler())
+        handler = RichHandler()
+        handler.setLevel(
+            logging.DEBUG
+        )  # Handler should accept all levels, logger controls what's shown
+        logger.addHandler(handler)
 
     if not any(isinstance(f, ApiCallContextFilter) for f in logger.filters):
         logger.addFilter(ApiCallContextFilter())
