@@ -68,3 +68,7 @@ check-all:
 test: # Run tests with coverage report
 	uv run coverage run -m pytest
 	uv run coverage report --skip-covered --sort=cover --fail-under=80
+
+
+start: # Start the dev server. Do not use in production!
+	uv run granian --interface asgi src.http.app:app --host 0.0.0.0 --port 8000 --reload --loop uvloop --log-level debug
