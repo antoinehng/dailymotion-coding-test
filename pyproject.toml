@@ -1,0 +1,18 @@
+[project]
+name = "identity"
+version = "0.1.0"
+description = "Dailymotion coding test"
+readme = "README.md"
+authors = [
+    { name = "Antoine Henning", email = "antoinehng@proton.me" }
+]
+requires-python = "==3.14.2"
+dependencies = []
+
+[project.scripts]
+identity = "identity:main"
+
+[build-system]
+requires = ["uv_build>=0.9.15,<0.10.0"]
+build-backend = "uv_build" # Using uv_build: fast, zero-config, modern — Could move to hatchling if needed for broader compatibilty with legacy 
+
