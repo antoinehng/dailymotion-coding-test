@@ -44,6 +44,9 @@ def getLogger(name: str | None = None, prefix: str | None = None) -> PrefixAdapt
     logger.propagate = False
 
     if not logger.hasHandlers():
+        # Currently using RichHandler for local and coding test.
+        # Either add DatadogHandler or GCP CloudLoggingHandler for remote deployment.
+        # Maybe even use a company logging package for consitency across projects.
         logger.addHandler(RichHandler())
 
     if not any(isinstance(f, ApiCallContextFilter) for f in logger.filters):

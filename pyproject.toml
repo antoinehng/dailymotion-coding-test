@@ -23,6 +23,9 @@ dev = [
     "pytest==9.0.2",
     "ruff==0.14.9",
 ]
+logging = [
+    "rich==14.2.0",
+]
 performance = [
     # All dependencies installed purely for performance improvements
     "httptools==0.7.1", # Automatically used by FastAPI - Faster HTTP parsing (C binding)
@@ -40,6 +43,7 @@ typing = [
 package = false
 default-groups = [
     "dev",
+    "logging",
     "performance",
     "security",
     "typing",
