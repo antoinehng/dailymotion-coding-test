@@ -1,32 +1,28 @@
 """Base PublicId value object for domain entities."""
 
+from dataclasses import dataclass
 from typing import ClassVar
 from typing import TypeVar
 from uuid import UUID
 from uuid import uuid7
 
-from pydantic import BaseModel
-from pydantic import field_validator
-
 T = TypeVar("T", bound="PublicId")
 
 
-class PublicId(BaseModel):
+@dataclass(frozen=True)
+class PublicId:
     """Base class for public identifiers combining a prefix with UUIDv7."""
-
-    model_config = {"frozen": True, "arbitrary_types_allowed": True}
 
     PREFIX: ClassVar[str]  # Subclasses must define this
     prefix: str
     uuid_v7: UUID
 
-    def __init__(self, prefix: str, uuid_v7: UUID) -> None:
-        """Initialize PublicId with prefix and UUIDv7."""
-        if prefix != self.PREFIX:
+    def __post_init__(self) -> None:
+        """Validate that prefix matches the expected value."""
+        if self.prefix != self.PREFIX:
             raise ValueError(
-                f"Invalid prefix: expected '{self.PREFIX}', got '{prefix}'"
+                f"Invalid prefix: expected '{self.PREFIX}', got '{self.prefix}'"
             )
-        super().__init__(prefix=prefix, uuid_v7=uuid_v7)
 
     @classmethod
     def generate(cls: type[T]) -> T:
@@ -42,14 +38,6 @@ class PublicId(BaseModel):
             return cls(prefix=prefix, uuid_v7=uuid_v7)
         except (ValueError, AttributeError) as e:
             raise ValueError(f"Invalid {cls.__name__} format: {value}") from e
-
-    @classmethod
-    @field_validator("prefix", mode="before")
-    def validate_prefix(cls, value: str) -> str:
-        """Validate that prefix matches the expected value."""
-        if value != cls.PREFIX:
-            raise ValueError(f"Invalid prefix: expected '{cls.PREFIX}', got '{value}'")
-        return value
 
     def __str__(self) -> str:
         """Return string representation: 'prefix_uuid'."""
@@ -68,5 +56,5 @@ class PublicId(BaseModel):
         return self.prefix == other.prefix and self.uuid_v7 == other.uuid_v7
 
     def __hash__(self) -> int:
-        """Return hash."""
+        """Return hash - includes class type to ensure different types have different hashes."""
         return hash((self.__class__, self.prefix, self.uuid_v7))
