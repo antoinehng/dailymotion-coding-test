@@ -3,8 +3,8 @@
 from abc import ABC
 from abc import abstractmethod
 
-from src.domain.user.password import Password
-from src.domain.user.password_hash import PasswordHash
+from src.domain.user.value_objects.password import Password
+from src.domain.user.value_objects.password_hash import PasswordHash
 
 
 class PasswordHasher(ABC):

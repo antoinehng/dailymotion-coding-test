@@ -1,12 +1,27 @@
+import os
+
 import bcrypt
 
 from src.application.registration.ports.password_hasher import PasswordHasher
-from src.domain.user.password import Password
-from src.domain.user.password_hash import PasswordHash
+from src.domain.user.value_objects.password import Password
+from src.domain.user.value_objects.password_hash import PasswordHash
 
 
 class BcryptPasswordHasher(PasswordHasher):
     """Bcrypt local adapter implementation of password hasher."""
+
+    def __init__(self, cost_factor: int | None = None) -> None:
+        """Initialize bcrypt password hasher.
+
+        Args:
+            cost_factor: Bcrypt cost factor (rounds = 2^cost_factor).
+                        Defaults to 12 for production, or BCRYPT_COST_FACTOR env var.
+                        Lower values (4-6) are faster for testing.
+        """
+        if cost_factor is None:
+            # Use environment variable for test speedup, default to 12 for production
+            cost_factor = int(os.getenv("BCRYPT_COST_FACTOR", "12"))
+        self._cost_factor = cost_factor
 
     def hash(self, password: Password) -> PasswordHash:
         """Hash a password using bcrypt.
@@ -19,8 +34,9 @@ class BcryptPasswordHasher(PasswordHasher):
         """
         # Encode password to bytes for bcrypt
         password_bytes = password.value.encode("utf-8")
-        # Generate salt and hash (bcrypt handles salt automatically)
-        hashed = bcrypt.hashpw(password_bytes, bcrypt.gensalt())
+        # Generate salt and hash with configured cost factor
+        # bcrypt handles salt automatically
+        hashed = bcrypt.hashpw(password_bytes, bcrypt.gensalt(rounds=self._cost_factor))
         # Return as string (bcrypt hash is ASCII-safe)
         return PasswordHash(value=hashed.decode("utf-8"))
 

@@ -46,3 +46,7 @@ pythonVersion = "3.14"
 typeCheckingMode = "strict"
 venvPath = "."
 venv = ".venv"
+
+[tool.pytest.ini_options]
+# Automatically mark async test functions as asyncio tests
+asyncio_mode = "auto"
