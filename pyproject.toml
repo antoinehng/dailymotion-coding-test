@@ -7,7 +7,10 @@ authors = [
     { name = "Antoine Henning", email = "antoinehng@proton.me" }
 ]
 requires-python = "==3.14.2"
-dependencies = []
+dependencies = [
+   "fastapi[standard-no-fastapi-cloud-cli]==0.124.4",
+   "granian[uvloop]==2.6.0",                          # ASGI server with uvloop for better performance
+]
 
 [dependency-groups]
 dev = [
@@ -19,6 +22,11 @@ dev = [
     "pytest-mock==3.15.1",
     "pytest==9.0.2",
     "ruff==0.14.9",
+]
+performance = [
+    # All dependencies installed purely for performance improvements
+    "httptools==0.7.1", # Automatically used by FastAPI - Faster HTTP parsing (C binding)
+    "orjson==3.11.5",   # Set to be used as default FastAPI JSON serialization/deserialization
 ]
 security = [
     "bcrypt==5.0.0",
@@ -32,6 +40,7 @@ typing = [
 package = false
 default-groups = [
     "dev",
+    "performance",
     "security",
     "typing",
 ]
