@@ -1,0 +1,87 @@
+# Development Docker Compose Configuration
+#
+# This docker-compose.yml is provided for local development and testing purposes only.
+# It includes hot-reload capabilities, development-optimized settings, and simplified
+# infrastructure setup to facilitate the coding test.
+#
+# Note: Real infrastructure deployment (production-ready container orchestration,
+# secrets management, scaling, monitoring, etc.) is not part of this coding test scope.
+# The Dockerfile is provided as a foundation for containerization, but production
+# deployment strategies are not implemented here.
+
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: identity-api
+    working_dir: /app
+    ports:
+      - "8080:8080"
+    environment:
+      # Database connection settings
+      DATABASE_URL: postgresql://identity_user:identity_password@postgres:5432/identity_db
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: identity_user
+      POSTGRES_PASSWORD: identity_password
+      POSTGRES_DB: identity_db
+      # Python development settings
+      # PYTHONUNBUFFERED: Disable output buffering for immediate log visibility in Docker
+      PYTHONUNBUFFERED: "1"
+      # PYTHONDONTWRITEBYTECODE: Prevent .pyc file creation in mounted volumes (helps with hot-reload)
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      # Mount source code for hot-reload (read-write needed for file watching)
+      - ./src:/app/src
+      # Mount pyproject.toml and uv.lock in case dependencies change
+      - ./pyproject.toml:/app/pyproject.toml:ro
+      - ./uv.lock:/app/uv.lock:ro
+    entrypoint: ["granian"]
+    command: [
+      "--interface", "asgi",
+      "src.http.app:app",
+      "--host", "0.0.0.0",
+      "--port", "8080",
+      "--reload",
+      "--reload-tick", "50",
+      "--loop", "uvloop",
+      "--log-level", "debug"
+    ]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - identity-network
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: identity-database
+    environment:
+      POSTGRES_USER: identity_user
+      POSTGRES_PASSWORD: identity_password
+      POSTGRES_DB: identity_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - identity-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U identity_user -d identity_db"]
+      interval: 1s
+      timeout: 1s
+      retries: 10
+      start_period: 1s
+    restart: unless-stopped
+
+networks:
+  identity-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+

@@ -17,7 +17,7 @@
 # - Consistent behavior across different environments
 # - Works seamlessly with any language or toolchain
 
-.PHONY: help check check-lint format check-format check-imports check-types check-security check-all test install-dev imports lint types security all
+.PHONY: help check check-lint format check-format check-imports check-types check-security check-all test install-dev imports lint types security all compose compose-up compose-down compose-logs up down logs
 
 help: ## Show this help message
 	@echo "Available commands:"
@@ -69,6 +69,22 @@ test: # Run tests with coverage report
 	uv run coverage run -m pytest
 	uv run coverage report --skip-covered --sort=cover --fail-under=80
 
+compose: ## Docker compose commands (usage: make compose [up|down|logs])
+	@if [ -z "$(filter-out compose,$(MAKECMDGOALS))" ]; then \
+		echo "Usage: make compose [up|down|logs]"; \
+		exit 1; \
+	fi
+	@$(MAKE) compose-$(filter-out compose,$(MAKECMDGOALS))
 
-start: # Start the dev server. Do not use in production!
-	uv run granian --interface asgi src.http.app:app --host 0.0.0.0 --port 8000 --reload --loop uvloop --log-level debug
+# Dummy targets to prevent Make from treating arguments as unknown targets
+up down logs:
+	@:
+
+compose-up: # Start services in development mode with hot-reload
+	docker-compose up --build -d
+
+compose-down: # Stop services
+	docker-compose down
+
+compose-logs: # View logs from docker-compose
+	docker-compose logs -f app
