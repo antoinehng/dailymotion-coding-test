@@ -20,7 +20,11 @@ dev = [
     "pytest==9.0.2",
     "ruff==0.14.9",
 ]
+security = [
+    "bcrypt==5.0.0",
+]
 typing = [
+    "email-validator==2.3.0",
     "pydantic==2.12.5",
 ]
 
@@ -28,6 +32,7 @@ typing = [
 package = false
 default-groups = [
     "dev",
+    "security",
     "typing",
 ]
 
