@@ -6,6 +6,8 @@ from fastapi.responses import ORJSONResponse
 
 from src.http.middlewares import LoggingMiddleware
 from src.http.routes import router
+from src.infrastructure.database.postgres.asyncpg_pool import close_db_pool
+from src.infrastructure.database.postgres.asyncpg_pool import initialize_db_pool
 
 """
 # FastAPI App
@@ -15,13 +17,16 @@ from src.http.routes import router
 @asynccontextmanager
 async def lifespan(fastapi_app: FastAPI):
     # App startup
-
-    fastapi_app.state.services = {}
+    await initialize_db_pool(
+        app=fastapi_app,
+        min_size=10,  # Minimum connections in pool
+        max_size=20,  # Maximum connections in pool
+    )
 
     yield  # App Running
 
     # App Shutdown
-    del fastapi_app.state.services
+    await close_db_pool()
 
 
 app = FastAPI(
