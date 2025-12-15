@@ -20,14 +20,24 @@ dev = [
     "pytest==9.0.2",
     "ruff==0.14.9",
 ]
+typing = [
+    "pydantic==2.12.5",
+]
 
 [tool.uv]
 package = false
 default-groups = [
     "dev",
+    "typing",
 ]
 
 [build-system]
 requires = ["uv_build>=0.9.15,<0.10.0"]
 build-backend = "uv_build" # Using uv_build: fast, zero-config, modern — Could move to hatchling if needed for broader compatibilty with legacy 
 
+[tool.pyright]
+include = ["src", "tests"]
+pythonVersion = "3.14"
+typeCheckingMode = "strict"
+venvPath = "."
+venv = ".venv"
