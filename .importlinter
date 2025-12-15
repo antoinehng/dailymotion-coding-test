@@ -2,3 +2,65 @@
 root_packages =
     src
 include_external_packages = True
+
+[importlinter:contract:hexagonal-layers]
+name = Hexagonal architecture layers: HTTP -> Infrastructure -> Application -> Domain
+type = layers
+layers =
+    src.http
+    src.infrastructure
+    src.application
+    src.domain
+unmatched_ignore_imports_alerting = none
+
+[importlinter:contract:domain-independence]
+name = Domain subpackages should be independent (no cycles within domain)
+type = acyclic_siblings
+ancestors =
+    src.domain
+depth = 10
+unmatched_ignore_imports_alerting = none
+
+[importlinter:contract:application-independence]
+name = Application subpackages should be independent (no cycles within application)
+type = acyclic_siblings
+ancestors =
+    src.application
+depth = 10
+unmatched_ignore_imports_alerting = none
+
+[importlinter:contract:infrastructure-independence]
+name = Infrastructure subpackages should be independent (no cycles within infrastructure)
+type = acyclic_siblings
+ancestors =
+    src.infrastructure
+depth = 10
+unmatched_ignore_imports_alerting = none
+
+[importlinter:contract:http-independence]
+name = HTTP subpackages should be independent (no cycles within http)
+type = acyclic_siblings
+ancestors =
+    src.http
+depth = 10
+unmatched_ignore_imports_alerting = none
+
+[importlinter:contract:application-ports-protection]
+name = Application ports (repository interfaces) should only be imported by Application and Infrastructure
+type = protected
+protected_modules =
+    src.application.**.ports.**
+allowed_importers =
+    src.application.**
+    src.infrastructure.**
+unmatched_ignore_imports_alerting = none
+
+[importlinter:contract:domain-protection]
+name = Domain entities should only be imported by Application and Infrastructure, not HTTP directly
+type = protected
+protected_modules =
+    src.domain.**
+allowed_importers =
+    src.application.**
+    src.infrastructure.**
+unmatched_ignore_imports_alerting = none
