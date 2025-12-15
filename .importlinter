@@ -1,0 +1,4 @@
+[importlinter]
+root_packages =
+    src
+include_external_packages = True

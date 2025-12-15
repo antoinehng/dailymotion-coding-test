@@ -1,0 +1,50 @@
+target-version = "py314" # Always generate Python 3.14-compatible code.
+
+line-length = 88
+indent-width = 4
+exclude = []
+
+[format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[lint]
+select = [
+    "B",    # flake8-bugbear
+    "BLE",  # flake8-blind-except
+    "C4",   # flake8-comprehensions
+    "E",    # pycodestyle
+    "F",    # Pyflakes
+    "FIX",  # flake8-fixme
+    "I",    # isort
+    "PERF", # Perflint
+    "PL",   # Pylint
+    "RUF",  # Ruff-specific rules
+    "S",    # flake8-bandit
+    "SIM",  # flake8-simplify
+    "UP",   # pyupgrade
+]
+ignore = [
+    "E501",    # Avoid enforcing line-length violations (`E501`)
+]
+
+[lint.isort]
+force-single-line = true
+
+
+[lint.per-file-ignores]
+"**/{tests}/*" = [
+    "S101", # Use of `assert` detected
+]
+
+
+[lint.flake8-bugbear]
+extend-immutable-calls = [ # ignore B008 only for FastAPI dependency injection pattern
+    "fastapi.Depends",
+    "fastapi.Query",
+    "fastapi.Path",
+    "fastapi.Security",
+    "fastapi.security.HTTPBearer",
+]
