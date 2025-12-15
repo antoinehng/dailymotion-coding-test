@@ -1,0 +1,33 @@
+{
+    $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  
+    // Lift the default limit of 2 PRs per hour, which is especially useful when
+    // working on the configuration itself, and we need to trigger many updates.
+    // See https://docs.renovatebot.com/configuration-options/#prhourlylimit
+    prHourlyLimit: 999,
+  
+    // Enable lock file maintenance.
+    lockFileMaintenance: {
+      enabled: true,
+    },
+  
+    packageRules: [
+      {
+        // Automatically merge patch updates only if CI passes.
+        matchUpdateTypes: ['patch'],
+        automerge: true,
+        automergeType: 'pr',
+        platformAutomerge: true
+      },
+      {
+        // Group all Pytest packages together in a single bump pull request.
+        groupName: 'pytest',
+        matchDepNames: [
+          'pytest',
+          'pytest-asyncio',
+          'pytest-mock',
+        ]
+      }
+    ],
+  }
+  
