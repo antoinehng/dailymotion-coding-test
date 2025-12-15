@@ -48,4 +48,4 @@ check-all:
 
 test: # Run tests with coverage report
 	uv run coverage run -m pytest
-	uv run coverage report --cov=src --skip-covered --sort=cover --fail-under=80 --cov-report=term-missing
+	uv run coverage report --skip-covered --sort=cover --fail-under=80
