@@ -26,7 +26,7 @@ class TestPostgresUserRepositoryCreate:
         email = f"test_{uuid4().hex[:8]}@example.com"
         password_hash = PasswordHash(value="$2b$04$test_hash_value")
 
-        user = await user_repository.create(email, password_hash)  # type: ignore[arg-type]  # EmailStr accepts str
+        user = await user_repository.create(email, password_hash)
 
         assert user.email == email
         assert user.password_hash.value == password_hash.value
@@ -39,17 +39,17 @@ class TestPostgresUserRepositoryCreate:
         user_repository: PostgresUserRepository,
     ) -> None:
         """Test that creating a user with duplicate email raises UserAlreadyExistsError."""
-        email = "duplicate@example.com"  # type: ignore[assignment]
+        email = "duplicate@example.com"
         password_hash = PasswordHash(value="$2b$04$test_hash_value")
 
         # Create first user
-        await user_repository.create(email, password_hash)  # type: ignore[arg-type]
+        await user_repository.create(email, password_hash)
 
         # Try to create duplicate - should raise error
         with pytest.raises(UserAlreadyExistsError) as exc_info:
-            await user_repository.create(email, password_hash)  # type: ignore[arg-type]
+            await user_repository.create(email, password_hash)
 
-        assert str(email) in str(exc_info.value)  # type: ignore[arg-type]
+        assert email in str(exc_info.value)
 
 
 class TestPostgresUserRepositoryFindById:
@@ -63,7 +63,7 @@ class TestPostgresUserRepositoryFindById:
         email = f"findbyid_{uuid4().hex[:8]}@example.com"
         password_hash = PasswordHash(value="$2b$04$test_hash_value")
 
-        created_user = await user_repository.create(email, password_hash)  # type: ignore[arg-type]
+        created_user = await user_repository.create(email, password_hash)
         found_user = await user_repository.find_by_id(created_user.id)
 
         assert found_user.id == created_user.id
@@ -95,7 +95,7 @@ class TestPostgresUserRepositoryFindByPublicId:
         email = f"findbypublicid_{uuid4().hex[:8]}@example.com"
         password_hash = PasswordHash(value="$2b$04$test_hash_value")
 
-        created_user = await user_repository.create(email, password_hash)  # type: ignore[arg-type]
+        created_user = await user_repository.create(email, password_hash)
         found_user = await user_repository.find_by_public_id(created_user.public_id)
 
         assert found_user.id == created_user.id
@@ -126,8 +126,8 @@ class TestPostgresUserRepositoryFindByEmail:
         email = f"findbyemail_{uuid4().hex[:8]}@example.com"
         password_hash = PasswordHash(value="$2b$04$test_hash_value")
 
-        created_user = await user_repository.create(email, password_hash)  # type: ignore[arg-type]
-        found_user = await user_repository.find_by_email(str(email))  # type: ignore[arg-type]
+        created_user = await user_repository.create(email, password_hash)
+        found_user = await user_repository.find_by_email(email)
 
         assert found_user.id == created_user.id
         assert found_user.email == email
@@ -156,7 +156,7 @@ class TestPostgresUserRepositorySetStatus:
         email = f"setstatus_{uuid4().hex[:8]}@example.com"
         password_hash = PasswordHash(value="$2b$04$test_hash_value")
 
-        created_user = await user_repository.create(email, password_hash)  # type: ignore[arg-type]
+        created_user = await user_repository.create(email, password_hash)
         assert created_user.status == UserStatus.PENDING
 
         updated_user = await user_repository.set_status(
@@ -193,7 +193,7 @@ class TestPostgresUserRepositoryDataMapper:
         email = f"publicidtest_{uuid4().hex[:8]}@example.com"
         password_hash = PasswordHash(value="$2b$04$test_hash_value")
 
-        user = await user_repository.create(email, password_hash)  # type: ignore[arg-type]  # EmailStr accepts str
+        user = await user_repository.create(email, password_hash)
 
         # Verify the UUID is stored correctly in the database
         row = await db_connection.fetchrow(
