@@ -3,9 +3,8 @@ from src.application.registration.ports.activation_code_repository import (
 )
 from src.application.registration.ports.user_repository import UserRepository
 from src.domain.user.entities.user import User
-from src.domain.user.entities.user import UserPublicId
+from src.domain.user.entities.user import UserId
 from src.domain.user.entities.user import UserStatus
-from src.domain.user.errors import ActivationCodeInvalidError
 
 
 class ActivateUser:
@@ -40,25 +39,22 @@ class ActivateUser:
             ActivationCodeNotFoundError: If activation code not found
             ActivationCodeInvalidError: If activation code is invalid (wrong or expired)
         """
-        # Find user (raises UserNotFoundError if not found)
-        user = await self._user_repository.find_by_public_id(public_id)
-
         # Find and verify activation code
         activation_code = (
             await self._activation_code_repository.find_by_user_id_and_code(
-                user.id, code
+                user_id, code
             )
         )
 
-        if not activation_code.is_valid():
-            raise ActivationCodeInvalidError()
+        # Verify activation code validity (raises ActivationCodeInvalidError if invalid)
+        activation_code.is_valid()
 
         # Update user status to ACTIVE
         activated_user = await self._user_repository.set_status(
-            user.id, UserStatus.ACTIVE
+            user_id, UserStatus.ACTIVE
         )
 
         # Mark activation code as used (one-time use)
-        await self._activation_code_repository.mark_as_used(user.id)
+        await self._activation_code_repository.mark_as_used(user_id)
 
         return activated_user
