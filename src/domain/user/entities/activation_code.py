@@ -7,9 +7,9 @@ from enum import StrEnum
 from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import Field
-from pydantic import field_validator
 
 from src.domain.user.entities.user import UserId
+from src.domain.user.errors import ActivationCodeInvalidError
 
 
 class ActivationCodeStatus(StrEnum):
@@ -19,6 +19,10 @@ class ActivationCodeStatus(StrEnum):
     USED = "used"
 
 
+# Constants
+ACTIVATION_CODE_LENGTH = 4
+
+
 class ActivationCode(BaseModel):
     """Activation code entity for user account activation."""
 
@@ -26,19 +30,34 @@ class ActivationCode(BaseModel):
 
     user_id: UserId
     code: str = Field(
-        ..., description="4-digit activation code", min_length=4, max_length=4
+        ...,
+        description="4-digit activation code",
+        min_length=ACTIVATION_CODE_LENGTH,
+        max_length=ACTIVATION_CODE_LENGTH,
     )
     expires_at: datetime
     status: ActivationCodeStatus = ActivationCodeStatus.PENDING
 
-    @field_validator("expires_at")
-    @classmethod
-    def validate_expires_at(cls, v: datetime) -> datetime:
-        """Validate expiration time is in the future."""
-        if v < datetime.now(UTC):
-            raise ValueError("Activation code expiration time must be in the future")
+    @staticmethod
+    def validate_code_format(code: str) -> str:
+        """Validate that code is exactly 4 digits.
 
-        return v
+        Args:
+            code: Code string to validate
+
+        Returns:
+            Validated code string
+
+        Raises:
+            ValueError: If code is not 4 digits
+        """
+        if not code.isdigit():
+            raise ValueError("Activation code must contain only digits")
+        if len(code) != ACTIVATION_CODE_LENGTH:
+            raise ValueError(
+                f"Activation code must be exactly {ACTIVATION_CODE_LENGTH} digits"
+            )
+        return code
 
     @staticmethod
     def generate_code() -> str:
@@ -93,6 +112,17 @@ class ActivationCode(BaseModel):
         """Check if the activation code is valid (not expired and not used).
 
         Returns:
-            True if code is valid, False otherwise
+            True if code is valid
+
+        Raises:
+            ActivationCodeInvalidError: If code is expired or already used
         """
-        return not self.is_used() and not self.is_expired()
+        if self.is_used():
+            raise ActivationCodeInvalidError("Activation code has already been used.")
+
+        if self.is_expired():
+            raise ActivationCodeInvalidError(
+                "Activation code has expired. Please request a new activation code."
+            )
+
+        return True

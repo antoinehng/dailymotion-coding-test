@@ -3,6 +3,8 @@ from pydantic import EmailStr
 from pydantic import Field
 from pydantic import field_validator
 
+from src.domain.user.entities.activation_code import ACTIVATION_CODE_LENGTH
+from src.domain.user.entities.activation_code import ActivationCode
 from src.domain.user.value_objects.password import Password
 
 
@@ -49,6 +51,43 @@ class RegisterUserRequest(BaseModel):
 
 class RegisterUserResponse(BaseModel):
     """Response schema for user registration."""
+
+    public_id: str = Field(..., description="User's public identifier")
+    email: EmailStr = Field(..., description="User's email address")
+    status: str = Field(..., description="User's account status")
+
+
+class ActivateUserRequest(BaseModel):
+    """Request schema for user activation."""
+
+    code: str = Field(
+        ...,
+        description="4-digit activation code",
+        min_length=ACTIVATION_CODE_LENGTH,
+        max_length=ACTIVATION_CODE_LENGTH,
+        examples=["1234"],
+    )
+
+    @field_validator("code")
+    @classmethod
+    def validate_code(cls, v: str) -> str:
+        """Validate that code is exactly 4 digits using domain validation.
+
+        Args:
+            v: Code string to validate
+
+        Returns:
+            Validated code string
+
+        Raises:
+            ValueError: If code is not 4 digits
+        """
+        # Reuse validation from domain entity
+        return ActivationCode.validate_code_format(v)
+
+
+class ActivateUserResponse(BaseModel):
+    """Response schema for user activation."""
 
     public_id: str = Field(..., description="User's public identifier")
     email: EmailStr = Field(..., description="User's email address")

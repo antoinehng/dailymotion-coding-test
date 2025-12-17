@@ -8,6 +8,7 @@ from pydantic import ValidationError
 from src.domain.user.entities.activation_code import ActivationCode
 from src.domain.user.entities.activation_code import ActivationCodeStatus
 from src.domain.user.entities.user import UserId
+from src.domain.user.errors import ActivationCodeInvalidError
 
 
 class TestActivationCodeFieldValidation:
@@ -34,8 +35,12 @@ class TestActivationCodeFieldValidation:
         error_str = str(exc_info.value).lower()
         assert "at most 4 characters" in error_str or "string_too_long" in error_str
 
-    def test_expires_at_must_be_in_future(self) -> None:
-        """Test that expires_at must be in the future."""
+    def test_expires_at_can_be_in_past(self) -> None:
+        """Test that expires_at can be in the past (for loading expired codes from DB).
+
+        Note: Expired codes can be created to allow loading from database.
+        Validation happens when checking is_valid() instead.
+        """
         user_id = UserId(1)
 
         # Valid future time
@@ -43,10 +48,18 @@ class TestActivationCodeFieldValidation:
         code = ActivationCode(user_id=user_id, code="1234", expires_at=future_time)
         assert code.expires_at == future_time
 
-        # Past time should raise ValueError
+        # Past time can be created (needed for loading expired codes from database)
         past_time = datetime.now(UTC) - timedelta(minutes=1)
-        with pytest.raises(ValueError, match="expiration time must be in the future"):
-            ActivationCode(user_id=user_id, code="1234", expires_at=past_time)
+        expired_code = ActivationCode.model_construct(
+            user_id=user_id,
+            code="1234",
+            expires_at=past_time,
+            status=ActivationCodeStatus.PENDING,
+        )
+        assert expired_code.expires_at == past_time
+        # Validation happens when checking validity
+        with pytest.raises(ActivationCodeInvalidError, match="expired"):
+            expired_code.is_valid()
 
     def test_default_status_is_pending(self) -> None:
         """Test that default status is PENDING."""
@@ -239,8 +252,8 @@ class TestActivationCodeIsValid:
         )
         assert code.is_valid() is True
 
-    def test_is_valid_returns_false_for_used_code(self) -> None:
-        """Test that is_valid() returns False for used code."""
+    def test_is_valid_raises_error_for_used_code(self) -> None:
+        """Test that is_valid() raises ActivationCodeInvalidError for used code."""
         user_id = UserId(1)
         expires_at = datetime.now(UTC) + timedelta(minutes=1)
 
@@ -250,10 +263,11 @@ class TestActivationCodeIsValid:
             expires_at=expires_at,
             status=ActivationCodeStatus.USED,
         )
-        assert code.is_valid() is False
+        with pytest.raises(ActivationCodeInvalidError, match="already been used"):
+            code.is_valid()
 
-    def test_is_valid_returns_false_for_expired_code(self) -> None:
-        """Test that is_valid() returns False for expired code."""
+    def test_is_valid_raises_error_for_expired_code(self) -> None:
+        """Test that is_valid() raises ActivationCodeInvalidError for expired code."""
         user_id = UserId(1)
         expires_at = datetime.now(UTC) - timedelta(minutes=1)
 
@@ -263,10 +277,11 @@ class TestActivationCodeIsValid:
             expires_at=expires_at,
             status=ActivationCodeStatus.PENDING,
         )
-        assert expired_code.is_valid() is False
+        with pytest.raises(ActivationCodeInvalidError, match="expired"):
+            expired_code.is_valid()
 
-    def test_is_valid_returns_false_for_used_and_expired_code(self) -> None:
-        """Test that is_valid() returns False for code that is both used and expired."""
+    def test_is_valid_raises_error_for_used_and_expired_code(self) -> None:
+        """Test that is_valid() raises ActivationCodeInvalidError for code that is both used and expired."""
         user_id = UserId(1)
         expires_at = datetime.now(UTC) - timedelta(minutes=1)
 
@@ -276,4 +291,6 @@ class TestActivationCodeIsValid:
             expires_at=expires_at,
             status=ActivationCodeStatus.USED,
         )
-        assert expired_code.is_valid() is False
+        # Should raise error for used code first (checked before expired)
+        with pytest.raises(ActivationCodeInvalidError, match="already been used"):
+            expired_code.is_valid()
