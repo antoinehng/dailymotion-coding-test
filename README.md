@@ -1,5 +1,4 @@
-# dailymotion-coding-test
-Coding test for Dailymotion
+# coding-test
 
 ## Assignment
 
