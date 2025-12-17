@@ -49,8 +49,8 @@ class RegisterUserRequest(BaseModel):
         return v
 
 
-class RegisterUserResponse(BaseModel):
-    """Response schema for user registration."""
+class PublicUserResponse(BaseModel):
+    """Response schema for public user information."""
 
     public_id: str = Field(..., description="User's public identifier")
     email: EmailStr = Field(..., description="User's email address")
@@ -84,11 +84,3 @@ class ActivateUserRequest(BaseModel):
         """
         # Reuse validation from domain entity
         return ActivationCode.validate_code_format(v)
-
-
-class ActivateUserResponse(BaseModel):
-    """Response schema for user activation."""
-
-    public_id: str = Field(..., description="User's public identifier")
-    email: EmailStr = Field(..., description="User's email address")
-    status: str = Field(..., description="User's account status")

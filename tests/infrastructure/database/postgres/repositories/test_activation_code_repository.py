@@ -142,13 +142,10 @@ class TestPostgresActivationCodeRepositoryFindByUserIdAndCode:
         non_existent_user_id = UserId(99999)
         non_existent_code = "XXXX"
 
-        with pytest.raises(ActivationCodeNotFoundError) as exc_info:
+        with pytest.raises(ActivationCodeNotFoundError):
             await activation_code_repository.find_by_user_id_and_code(
                 non_existent_user_id, non_existent_code
             )
-
-        assert str(non_existent_user_id) in str(exc_info.value)
-        assert non_existent_code in str(exc_info.value)
 
 
 class TestPostgresActivationCodeRepositoryMarkAsUsed:

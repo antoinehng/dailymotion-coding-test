@@ -119,7 +119,7 @@ class PostgresUserRepository(UserRepository, PostgresUserDataMapper):
         )
 
         if row is None:
-            raise UserNotFoundError(f"User with id {user_id} not found.")
+            raise UserNotFoundError()
 
         return self.row_to_user(row)
 
@@ -200,6 +200,6 @@ class PostgresUserRepository(UserRepository, PostgresUserDataMapper):
         )
 
         if row is None:
-            raise UserNotFoundError(f"User with id {user_id} not found.")
+            raise UserNotFoundError()
 
         return self.row_to_user(row)

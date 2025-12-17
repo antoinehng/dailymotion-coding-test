@@ -103,9 +103,7 @@ class PostgresActivationCodeRepository(
         )
 
         if row is None:
-            raise ActivationCodeNotFoundError(
-                f"Activation code not found for user_id {user_id} and code {code}."
-            )
+            raise ActivationCodeNotFoundError()
 
         return self.row_to_activation_code(row)
 
