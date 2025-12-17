@@ -324,9 +324,7 @@ class TestActivateUserExecute:
         )
 
         # Verify activation code was marked as used
-        mock_activation_code_repository.mark_as_used.assert_called_once_with(
-            user_id
-        )
+        mock_activation_code_repository.mark_as_used.assert_called_once_with(user_id)
 
         # Verify returned user is the same active user
         assert result == sample_user_active

@@ -54,7 +54,9 @@ class ActivationCode(BaseModel):
         if not code.isdigit():
             raise ValueError("Activation code must contain only digits")
         if len(code) != ACTIVATION_CODE_LENGTH:
-            raise ValueError(f"Activation code must be exactly {ACTIVATION_CODE_LENGTH} digits")
+            raise ValueError(
+                f"Activation code must be exactly {ACTIVATION_CODE_LENGTH} digits"
+            )
         return code
 
     @staticmethod
