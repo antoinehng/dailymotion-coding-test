@@ -3,6 +3,7 @@ root_packages =
     src
 include_external_packages = True
 
+
 [importlinter:contract:hexagonal-layers]
 name = Hexagonal architecture layers: HTTP -> Infrastructure -> Application -> Domain
 type = layers
@@ -11,6 +12,23 @@ layers =
     src.infrastructure
     src.application
     src.domain
+
+
+[importlinter:contract:infrastructure-independence]
+name = Infracstructure implementations should be independent
+type = independence
+modules =
+    src.infrastructure.*
+ignore_imports =
+    src.infrastructure.** -> src.infrastructure.logging.**
+
+
+[importlinter:contract:application-independence]
+name = Applications should be independent
+type = independence
+modules =
+    src.application.*
+
 
 [importlinter:contract:domain-independence]
 name = Domains should be independent
