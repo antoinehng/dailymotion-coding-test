@@ -12,6 +12,56 @@
 version: '3.8'
 
 services:
+  # Optional: Clear database data after migrations
+  # To enable: docker-compose --profile clear-data up
+  # This will clear all rows but keep table structure
+  clear-data:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: identity-clear-data
+    entrypoint: []  # Override the granian entrypoint
+    command: ["python", "-m", "src.infrastructure.database.postgres.clear_data"]
+    environment:
+      DATABASE_URL: postgresql://identity_user:identity_password@postgres:5432/identity_db
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: identity_user
+      POSTGRES_PASSWORD: identity_password
+      POSTGRES_DB: identity_db
+    networks:
+      - identity-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: "no"  # Don't restart - this is a one-time job
+    profiles:
+      - clear-data  # Only run when explicitly enabled
+
+  # Init container: Runs migrations before app starts
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: identity-migrate
+    entrypoint: []  # Override the granian entrypoint
+    command: ["python", "-m", "src.infrastructure.database.postgres.migrate"]
+    environment:
+      DATABASE_URL: postgresql://identity_user:identity_password@postgres:5432/identity_db
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: identity_user
+      POSTGRES_PASSWORD: identity_password
+      POSTGRES_DB: identity_db
+    networks:
+      - identity-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"  # Don't restart - this is a one-time job
+
   app:
     build:
       context: .
@@ -51,6 +101,8 @@ services:
       "--log-level", "debug"
     ]
     depends_on:
+      migrate:
+        condition: service_completed_successfully  # Wait for migrations to complete
       postgres:
         condition: service_healthy
     networks:
