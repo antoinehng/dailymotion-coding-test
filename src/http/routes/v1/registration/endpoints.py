@@ -49,7 +49,9 @@ router = APIRouter()
 async def register_user(
     request: RegisterUserRequest,
     register_use_case: RegisterUser = Depends(get_register_user_use_case),
-    issue_code_use_case: IssueActivationCode = Depends(get_issue_activation_code_use_case),
+    issue_code_use_case: IssueActivationCode = Depends(
+        get_issue_activation_code_use_case
+    ),
 ) -> PublicUserResponse:
     """Register a new user.
 
@@ -61,7 +63,9 @@ async def register_user(
     Returns:
         Registration response with user details
     """
-    user = await register_use_case.execute(email=request.email, password=request.password)
+    user = await register_use_case.execute(
+        email=request.email, password=request.password
+    )
 
     # Note: Keeping registration and activation code issuance separate allows for reuse
     # (e.g., resend-code endpoint). In a more complex architecture, this could be
@@ -209,5 +213,3 @@ async def resend_activation_code(
     """
     await use_case.execute(user_id=auth_user.id)
     return Response(status_code=status.HTTP_201_CREATED)
-
-    
