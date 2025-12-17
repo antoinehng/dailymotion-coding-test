@@ -75,4 +75,21 @@ In a production environment, the choice of database adapter may differ:
 
 **Note**: In practice, AsyncPG has shown slower connection times when connecting to a PgBouncer pooler at the database level (as opposed to application-level pooling), an issue not present with Psycopg3. Production decisions should be based on real-life testing and infrastructure requirements, not just codebase preferences.
 
+## Testing
+
+### Testing Database Adapters
+
+Integration tests for database adapters use a real PostgreSQL database with transaction-based isolation. Each test runs in its own transaction that is automatically rolled back after completion, ensuring complete test isolation without any manual cleanup. This approach provides fast, reliable testing against actual PostgreSQL, catching real SQL errors, data type issues, and constraint violations that mocks would miss.
+
+These tests only run if `TEST_DATABASE_URL` (or `DATABASE_URL`) is set to a database URL; otherwise they are automatically skipped, allowing the test suite to run in environments without database access. A PostgreSQL service is configured in the GitHub Actions CI workflow, so these integration tests run automatically on every push and pull request. Fixtures in `tests/infrastructure/conftest.py` provide database connections, repositories, and handle migrations automatically.
+
+```bash
+# Start the database
+docker-compose up -d postgres
+
+# Set the database URL and run adapter tests
+export TEST_DATABASE_URL="postgresql://identity_user:identity_password@localhost:5432/identity_db"
+make test
+```
+
 

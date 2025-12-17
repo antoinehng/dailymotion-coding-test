@@ -69,7 +69,7 @@ class PostgresActivationCodeRepository(
             ON CONFLICT (user_id, code) DO UPDATE
             SET expires_at = EXCLUDED.expires_at,
                 status = EXCLUDED.status,
-                updated_at = NOW()
+                updated_at = (NOW() AT TIME ZONE 'UTC')
             """,
             activation_code.user_id,
             activation_code.code,
@@ -118,7 +118,7 @@ class PostgresActivationCodeRepository(
         await self._conn.execute(
             """
             UPDATE activation_codes
-            SET status = 'used', updated_at = NOW()
+            SET status = 'used', updated_at = (NOW() AT TIME ZONE 'UTC')
             WHERE user_id = $1 AND status = 'pending'
             """,
             user_id,
