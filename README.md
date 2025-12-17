@@ -75,6 +75,44 @@ The activation codes will appear in the application logs when they are generated
 
 This project combines **Hexagonal Architecture** (structure) with **Domain-Driven Design** (domain modeling) for maintainability and scalability.
 
+
+### Diagram
+
+```mermaid
+graph TB
+    HTTP[HTTP Layer<br/>FastAPI Routes]
+    
+    subgraph "Application Layer"
+        UseCases[Use Cases]
+        Ports[Ports<br/>Interfaces]
+    end
+    
+    Domain[Domain Layer<br/>Entities, Value Objects, Business Rules]
+    
+    subgraph "Infrastructure Layer"
+        Adapters[Adapters<br/>DB, SMTP]
+    end
+    
+    Database[(Database<br/>PostgreSQL)]
+    ExternalService[External Service<br/>SMTP, etc.]
+    
+    HTTP -->|depends on| UseCases
+    UseCases -->|depends on| Domain
+    UseCases -->|depends on| Ports
+    Adapters -->|implements| Ports
+    HTTP -->|Dependency Injection| Adapters
+    Adapters -->|connects to| Database
+    Adapters -->|connects to| ExternalService
+    
+    style HTTP fill:#e1f5ff
+    style UseCases fill:#e8f5e9
+    style Ports fill:#e8f5e9
+    style Domain fill:#f3e5f5
+    style Adapters fill:#fff4e1
+    style Database fill:#ffe1e1
+    style ExternalService fill:#ffe1e1
+```
+
 ### Structure
 
 ```
@@ -115,7 +153,7 @@ Python cannot enforce architectural boundaries. We use [Import Linter](https://i
 - **Independance**: Domain entities and application ports should be independent from each other
 
 ```bash
-make check-imports  # Validate import rules
+make check imports  # Validate import rules
 ```
 
 ## Implementation Process
@@ -155,6 +193,40 @@ In a production environment, the choice of database adapter may differ:
   - Integration with existing infrastructure
 
 **Note**: In practice, AsyncPG has shown slower connection times when connecting to a PgBouncer pooler at the database level (as opposed to application-level pooling), an issue not present with Psycopg3. Production decisions should be based on real-life testing and infrastructure requirements, not just codebase preferences.
+
+
+
+## Code Quality Checks
+
+**Prerequisites**: Install local development environment tooling:
+
+```bash
+make install
+```
+
+**Note**: While Docker and Docker Compose are sufficient to run the project, static code analysis requires local development tooling.
+
+Run various code quality checks using `make check`:
+
+```bash
+# Check code formatting (ruff)
+make check format
+
+# Check linting (ruff)
+make check lint
+
+# Check import structure (import-linter)
+make check imports
+
+# Check type hints (pyright)
+make check types
+
+# Check security vulnerabilities and secrets
+make check security
+
+# Run all checks
+make check all
+```
 
 ## Testing
 
