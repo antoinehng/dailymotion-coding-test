@@ -1,10 +1,20 @@
 from contextlib import asynccontextmanager
 from types import SimpleNamespace
 
+from asyncpg import PostgresError
 from fastapi import FastAPI
+from fastapi import HTTPException
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import ORJSONResponse
 
+from src.domain.user.errors import UserError
+from src.http.error_management.error_handlers import base_exception_handler
+from src.http.error_management.error_handlers import exception_group_handler
+from src.http.error_management.error_handlers import http_exception_handler
+from src.http.error_management.error_handlers import postgres_exception_handler
+from src.http.error_management.error_handlers import user_exception_handler
+from src.http.error_management.error_handlers import validation_exception_handler
 from src.http.middlewares import LoggingMiddleware
 from src.http.routes import router
 from src.infrastructure.database.postgres.asyncpg_pool import close_db_pool
@@ -78,7 +88,15 @@ app.include_router(router)
 FastAPI will check the exception handlers in the order they are defined and execute the first one that matches the exception type.
 More specific exception handlers should be defined before more general ones to ensure that the correct handler is executed for each exception type.
 """
-app.exception_handlers = {}
+app.exception_handlers = {
+    PostgresError: postgres_exception_handler,
+    RequestValidationError: validation_exception_handler,
+    HTTPException: http_exception_handler,
+    UserError: user_exception_handler,
+    ExceptionGroup: exception_group_handler,
+    Exception: base_exception_handler,
+}
+
 
 """
 # Swagger UI Parameters
