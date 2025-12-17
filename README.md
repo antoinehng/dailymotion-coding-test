@@ -44,10 +44,9 @@ src/
 
 Python cannot enforce architectural boundaries. We use [Import Linter](https://import-linter.readthedocs.io/en/stable/) to automatically enforce rules in CI/CD.
 
-**Contracts** (`.importlinter`):
+**Contracts** ([`.importlinter`](.importlinter)):
 - **Layers**: Enforces `http` → `infrastructure` → `application` → `domain` dependency direction
-- **Protected**: Domain entities and application ports only accessible to allowed layers
-- **Acyclic siblings**: Prevents circular dependencies within layers
+- **Independance**: Domain entities and application ports should be independent from each other
 
 ```bash
 make check-imports  # Validate import rules
@@ -77,9 +76,36 @@ In a production environment, the choice of database adapter may differ:
 
 ## Testing
 
-### Testing Database Adapters
+This project uses pytest for testing with comprehensive coverage requirements. Tests are organized by layer (domain, application, infrastructure, http) and include unit tests and integration tests.
 
-Integration tests for database adapters use a real PostgreSQL database with transaction-based isolation. Each test runs in its own transaction that is automatically rolled back after completion, ensuring complete test isolation without any manual cleanup. This approach provides fast, reliable testing against actual PostgreSQL, catching real SQL errors, data type issues, and constraint violations that mocks would miss.
+```bash
+# Run all tests with coverage report
+make test
+
+# Run tests without coverage
+uv run pytest
+```
+
+### Unit
+
+Unit tests focus on testing individual components in isolation with all dependencies mocked. This approach ensures fast execution, no external dependencies, and focused testing of component-specific logic.
+
+**Domain layer**: Tests domain entities, value objects, and business rules without any external dependencies.
+
+**Application layer**: Tests use cases with mocked ports (repositories, services), verifying business logic orchestration and error handling.
+
+**HTTP layer**: Endpoint tests mock use cases using FastAPI's dependency override mechanism, focusing on HTTP-specific concerns:
+- Request/response handling and status codes
+- Error formatting and exception handling
+- Authentication and authorization
+- Dependency injection wiring
+
+
+### Integration
+
+Integration tests verify that components work together correctly. Currently, integration tests focus on database adapters using a real PostgreSQL database with transaction-based isolation.
+
+Each test runs in its own transaction that is automatically rolled back after completion, ensuring complete test isolation without any manual cleanup. This approach provides fast, reliable testing against actual PostgreSQL, catching real SQL errors, data type issues, and constraint violations that mocks would miss.
 
 These tests only run if `TEST_DATABASE_URL` (or `DATABASE_URL`) is set to a database URL; otherwise they are automatically skipped, allowing the test suite to run in environments without database access. A PostgreSQL service is configured in the GitHub Actions CI workflow, so these integration tests run automatically on every push and pull request. Fixtures in `tests/infrastructure/conftest.py` provide database connections, repositories, and handle migrations automatically.
 
@@ -87,9 +113,15 @@ These tests only run if `TEST_DATABASE_URL` (or `DATABASE_URL`) is set to a data
 # Start the database
 docker-compose up -d postgres
 
-# Set the database URL and run adapter tests
+# Set the database URL and run integration tests
 export TEST_DATABASE_URL="postgresql://identity_user:identity_password@localhost:5432/identity_db"
 make test
 ```
+
+### End-to-End
+
+End-to-end tests were not implemented in this coding test. Instead, we stopped at unit tests that mock use cases in API endpoint testing. This approach aligns with the current simplicity of the project—with straightforward use cases and a single domain, the added complexity of full-stack E2E tests doesn't provide sufficient value at this stage.
+
+End-to-end tests that exercise the entire stack (HTTP → Application → Infrastructure → Database) are valuable for validating complete user flows and catching integration issues across layers. However, they are typically slower, more complex to maintain, and better suited for pre-deployment validation in more complex systems. For true end-to-end testing, consider running such tests in a remote environment that closely matches production (e.g., staging or a dedicated E2E testing environment) to validate behavior in conditions similar to production, including network latency, resource constraints, and real external service interactions.
 
 
