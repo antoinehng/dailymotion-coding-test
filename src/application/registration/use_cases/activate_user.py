@@ -24,12 +24,12 @@ class ActivateUser:
         self._user_repository = user_repository
         self._activation_code_repository = activation_code_repository
 
-    async def execute(self, public_id: UserPublicId, code: str) -> User:
+    async def execute(self, user_id: UserId, code: str) -> User:
         """Activate a user account with activation code.
 
         Args:
-            public_id: User's public ID
-            activation_code: 4-digit activation code
+            user_id: User's internal ID
+            code: 4-digit activation code
 
         Returns:
             Activated user entity
