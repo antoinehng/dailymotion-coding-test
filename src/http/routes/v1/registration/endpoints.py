@@ -1,11 +1,10 @@
 from fastapi import APIRouter
 from fastapi import Depends
-from fastapi import HTTPException
 from fastapi import status
 
 from src.application.registration.use_cases.register_user import RegisterUser
-from src.domain.user.errors import UserAlreadyExistsError
 from src.http.dependencies.registration import get_register_user_use_case
+from src.http.error_management.error_response import ErrorResponse
 from src.http.routes.v1.registration.schemas import RegisterUserRequest
 from src.http.routes.v1.registration.schemas import RegisterUserResponse
 
@@ -18,6 +17,24 @@ router = APIRouter()
     status_code=status.HTTP_201_CREATED,
     summary="Register a new user",
     description="Create a new user account with email and password. An activation code will be sent via email.",
+    responses={
+        status.HTTP_201_CREATED: {
+            "model": RegisterUserResponse,
+            "description": "User successfully registered",
+        },
+        status.HTTP_409_CONFLICT: {
+            "model": ErrorResponse,
+            "description": "User already exists",
+        },
+        status.HTTP_422_UNPROCESSABLE_ENTITY: {
+            "model": ErrorResponse,
+            "description": "Validation error",
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "model": ErrorResponse,
+            "description": "Internal server error",
+        },
+    },
 )
 async def register_user(
     request: RegisterUserRequest,
@@ -31,19 +48,11 @@ async def register_user(
 
     Returns:
         Registration response with user details
-
-    Raises:
-        HTTPException: 400 if email already exists or validation fails
     """
-    try:
-        user = await use_case.execute(email=request.email, password=request.password)
-        return RegisterUserResponse(
-            public_id=str(user.public_id),
-            email=user.email,
-            status=user.status.value,
-        )
-    except UserAlreadyExistsError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=e.message,
-        ) from e
+    user = await use_case.execute(email=request.email, password=request.password)
+
+    return RegisterUserResponse(
+        public_id=str(user.public_id),
+        email=user.email,
+        status=user.status.value,
+    )
