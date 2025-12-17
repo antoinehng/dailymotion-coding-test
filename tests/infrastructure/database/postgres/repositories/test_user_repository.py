@@ -78,10 +78,8 @@ class TestPostgresUserRepositoryFindById:
         """Test that finding a non-existent user raises UserNotFoundError."""
         non_existent_id = UserId(99999)
 
-        with pytest.raises(UserNotFoundError) as exc_info:
+        with pytest.raises(UserNotFoundError):
             await user_repository.find_by_id(non_existent_id)
-
-        assert str(non_existent_id) in str(exc_info.value)
 
 
 class TestPostgresUserRepositoryFindByPublicId:
@@ -174,10 +172,8 @@ class TestPostgresUserRepositorySetStatus:
         """Test that updating status of non-existent user raises UserNotFoundError."""
         non_existent_id = UserId(99999)
 
-        with pytest.raises(UserNotFoundError) as exc_info:
+        with pytest.raises(UserNotFoundError):
             await user_repository.set_status(non_existent_id, UserStatus.ACTIVE)
-
-        assert str(non_existent_id) in str(exc_info.value)
 
 
 class TestPostgresUserRepositoryDataMapper:

@@ -31,7 +31,7 @@ router = APIRouter()
             "model": ErrorResponse,
             "description": "User already exists",
         },
-        status.HTTP_422_UNPROCESSABLE_ENTITY: {
+        status.HTTP_422_UNPROCESSABLE_CONTENT: {
             "model": ErrorResponse,
             "description": "Validation error",
         },
@@ -86,7 +86,7 @@ async def register_user(
             "model": ErrorResponse,
             "description": "User or activation code not found",
         },
-        status.HTTP_422_UNPROCESSABLE_ENTITY: {
+        status.HTTP_422_UNPROCESSABLE_CONTENT: {
             "model": ErrorResponse,
             "description": "Validation error",
         },

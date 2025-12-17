@@ -12,7 +12,7 @@ async def validation_exception_handler(
 ):
     return format_error_response(
         request=request,
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
         error_code=HttpErrorCode.HTTP_422,
         message="Validation Error",
         exceptions=[
