@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from types import SimpleNamespace
 
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
@@ -8,6 +9,8 @@ from src.http.middlewares import LoggingMiddleware
 from src.http.routes import router
 from src.infrastructure.database.postgres.asyncpg_pool import close_db_pool
 from src.infrastructure.database.postgres.asyncpg_pool import initialize_db_pool
+from src.infrastructure.security.password_hasher import BcryptPasswordHasher
+from src.infrastructure.smtp.email_service import LoggerEmailService
 
 """
 # FastAPI App
@@ -21,6 +24,12 @@ async def lifespan(fastapi_app: FastAPI):
         app=fastapi_app,
         min_size=10,  # Minimum connections in pool
         max_size=20,  # Maximum connections in pool
+    )
+
+    # Initialize services once
+    fastapi_app.state.services = SimpleNamespace(
+        password_hasher=BcryptPasswordHasher(),
+        email_service=LoggerEmailService(),
     )
 
     yield  # App Running

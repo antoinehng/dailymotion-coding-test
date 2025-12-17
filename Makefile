@@ -69,22 +69,25 @@ test: # Run tests with coverage report
 	uv run coverage run -m pytest
 	uv run coverage report --skip-covered --sort=cover --fail-under=80
 
-compose: ## Docker compose commands (usage: make compose [up|down|logs])
+compose: ## Docker compose commands (usage: make compose [up|down|logs|clear-data])
 	@if [ -z "$(filter-out compose,$(MAKECMDGOALS))" ]; then \
-		echo "Usage: make compose [up|down|logs]"; \
+		echo "Usage: make compose [up|down|logs|clear-data]"; \
 		exit 1; \
 	fi
 	@$(MAKE) compose-$(filter-out compose,$(MAKECMDGOALS))
 
 # Dummy targets to prevent Make from treating arguments as unknown targets
-up down logs:
+up down logs clear-data:
 	@:
 
 compose-up: # Start services in development mode with hot-reload
-	docker-compose up --build -d
+	docker-compose up --build --remove-orphans --detach
 
 compose-down: # Stop services
 	docker-compose down
 
 compose-logs: # View logs from docker-compose
 	docker-compose logs -f app
+
+compose-clear-data: # Clear database data (remove all rows, keep tables)
+	docker-compose run --rm --no-deps clear-data
