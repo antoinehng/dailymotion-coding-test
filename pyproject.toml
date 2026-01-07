@@ -9,7 +9,7 @@ authors = [
 requires-python = "==3.14.2"
 dependencies = [
    "fastapi[standard-no-fastapi-cloud-cli]==0.128.0",
-   "granian[uvloop]==2.6.0",                          # ASGI server with uvloop for better performance
+   "granian[uvloop]==2.6.1",                          # ASGI server with uvloop for better performance
 ]
 
 [dependency-groups]
